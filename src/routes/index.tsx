@@ -62,10 +62,7 @@ function App() {
 							className="w-24 h-24 md:w-32 md:h-32"
 						/>
 						<h1 className="text-6xl md:text-7xl font-black text-white [letter-spacing:-0.08em]">
-							<span className="text-gray-300">TANSTACK</span>{" "}
-							<span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-								START
-							</span>
+							<span className="text-gray-300">QUILLOS</span>{" "}
 						</h1>
 					</div>
 					<p className="text-2xl md:text-3xl text-gray-300 mb-4 font-light">
