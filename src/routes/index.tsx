@@ -1,10 +1,71 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useId } from "react";
+import { useId, useState } from "react";
+import { PreviewCard } from "../components/preview-card";
+import { FileUpload } from "../components/ui/file-upload";
+import { type MarketingResult, readFileAsDataUrl } from "../lib/ai";
+import { generateMarketing } from "../lib/ai.server";
 
 export const Route = createFileRoute("/")({ component: App });
 
 function App() {
 	const descriptionId = useId();
+	const [description, setDescription] = useState("");
+	const [heroImage, setHeroImage] = useState<File | null>(null);
+	const [heroImagePreview, setHeroImagePreview] = useState<string>();
+	const [result, setResult] = useState<MarketingResult | null>(null);
+	const [isGenerating, setIsGenerating] = useState(false);
+	const [error, setError] = useState<string>();
+
+	const handleImageSelect = (file: File) => {
+		if (!file.type.startsWith("image/")) {
+			setError("Please upload an image file.");
+			return;
+		}
+		if (heroImagePreview) {
+			URL.revokeObjectURL(heroImagePreview);
+		}
+		setResult(null);
+		setError(undefined);
+		setHeroImage(file);
+		setHeroImagePreview(URL.createObjectURL(file));
+	};
+
+	const handleCreatePreview = async () => {
+		console.log("handleCreatePreview called", { heroImage });
+		if (!heroImage) {
+			setError("Upload a hero image to continue.");
+			return;
+		}
+		setIsGenerating(true);
+		setError(undefined);
+		try {
+			console.log("Reading file...");
+			const { dataUrl, mediaType } = await readFileAsDataUrl(heroImage);
+			console.log("Calling server function...", { mediaType });
+			const result = await generateMarketing({
+				data: {
+					description,
+					dataUrl,
+					mediaType,
+				},
+			});
+			console.log("Result received:", result);
+			console.log("Has poster image:", !!result.posterImage);
+			if (result.posterImage) {
+				console.log("Poster image length:", result.posterImage.length);
+			}
+			setResult(result);
+		} catch (thrownError) {
+			console.error("Error:", thrownError);
+			const message =
+				thrownError instanceof Error
+					? thrownError.message
+					: "Failed to generate preview.";
+			setError(message);
+		} finally {
+			setIsGenerating(false);
+		}
+	};
 
 	return (
 		<div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-grid-white/[0.05]">
@@ -31,7 +92,7 @@ function App() {
 							</svg>
 						</div>
 						<h2 className="text-slate-50 text-2xl font-bold leading-tight font-heading">
-							CampaignGen
+							Quillos
 						</h2>
 					</div>
 					<div className="flex items-center gap-6">
@@ -81,31 +142,22 @@ function App() {
 										</p>
 									</div>
 									<div className="px-8 pb-8">
-										<div className="flex flex-col items-center justify-center rounded-2xl border-3 border-dashed border-accent-cyan/50 bg-navy/50 p-8 text-center h-80 transition-all duration-300 hover:border-accent-cyan hover:bg-accent-cyan/5">
-											<div className="flex flex-col items-center gap-4 text-slate-400">
-												<div className="flex size-16 items-center justify-center rounded-full bg-accent-cyan/10 animate-subtle-bounce">
-													<i
-														className="size-8 text-accent-cyan"
-														data-lucide="upload-cloud"
-													/>
-												</div>
-												<div className="flex flex-col">
-													<p className="text-lg font-semibold text-slate-200">
-														Click to upload or drag &amp; drop
-													</p>
-													<p className="text-base">
-														SVG, PNG, JPG or GIF (max. 2400x1600px)
-													</p>
-												</div>
-												<button
-													type="button"
-													className="mt-4 rounded-xl bg-slate-800 px-5 py-2.5 text-base font-semibold text-slate-200 shadow-md ring-1 ring-inset ring-slate-700 hover:bg-slate-700 hover:-translate-y-0.5 transition-all duration-200"
-												>
-													Select file
-												</button>
+										<FileUpload
+											title="Click to upload or drag & drop"
+											description="SVG, PNG, JPG or GIF (max. 2400x1600px)"
+											accept="image/*"
+											onFileSelect={handleImageSelect}
+											fileName={heroImage?.name}
+											disabled={isGenerating}
+										/>
+										{heroImage ? (
+											<div className="mt-4 flex items-center gap-2 text-accent-cyan">
+												<i className="size-5" data-lucide="check-circle" />
+												<p className="text-sm font-medium">
+													Image uploaded: {heroImage.name}
+												</p>
 											</div>
-											<input className="sr-only" type="file" />
-										</div>
+										) : null}
 									</div>
 								</div>
 								<div className="glass-card rounded-2xl">
@@ -130,6 +182,8 @@ function App() {
 												className="form-input flex w-full min-w-0 flex-1 resize-y overflow-hidden rounded-xl text-slate-100 focus:outline-0 focus:ring-2 focus:ring-accent-yellow border-3 border-slate-700 bg-transparent focus:border-accent-yellow min-h-40 placeholder:text-slate-500 p-4 text-base font-medium transition-colors"
 												id={descriptionId}
 												placeholder="e.g., A campaign for our new sustainable sneakers. Focus on urban exploration and eco-consciousness."
+												value={description}
+												onChange={(event) => setDescription(event.target.value)}
 											/>
 										</div>
 									</div>
@@ -138,104 +192,25 @@ function App() {
 									<button
 										type="button"
 										className="w-full rounded-2xl bg-slate-300 py-4 text-lg font-bold text-slate-900 shadow-md transition-transform duration-200 ease-in-out hover:scale-[1.02] hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+										onClick={handleCreatePreview}
+										disabled={isGenerating}
 									>
-										Create Preview
+										{isGenerating ? "Creating..." : "Create Preview"}
 									</button>
+									{error ? (
+										<p className="mt-3 text-sm text-accent-rose">{error}</p>
+									) : null}
 								</div>
 							</div>
 							<div className="lg:col-span-1 mt-8 lg:mt-0 h-full">
-								<div className="glass-card rounded-2xl border-3 border-accent-yellow/50 overflow-hidden h-full flex flex-col">
-									<div className="p-8">
-										<div className="flex items-center justify-between gap-4">
-											<div className="flex items-center gap-3">
-												<i
-													className="size-6 text-accent-yellow"
-													data-lucide="eye"
-												/>
-												<h3 className="text-2xl font-bold text-slate-100 font-heading">
-													3. Preview
-												</h3>
-											</div>
-										</div>
-										<p className="text-base text-slate-400 mt-1">
-											A real-time glimpse of your campaign's core components.
-										</p>
-									</div>
-									<div className="px-8 pb-8 flex-grow flex flex-col justify-between">
-										<div className="flex flex-col gap-8 rounded-2xl bg-navy/50 p-6 border border-slate-800 h-full">
-											<div className="w-full">
-												<div className="aspect-video w-full bg-slate-900 rounded-xl flex items-center justify-center">
-													<div
-														className="bg-center bg-no-repeat bg-cover w-full h-full rounded-xl"
-														style={{
-															backgroundImage:
-																"url('https://lh3.googleusercontent.com/aida-public/AB6AXuCqx7AIFHgxCSRBNdrN0ryWAHqTNyThw49RE9TNu6rdPUcLisy_X68woSgGuyxRk6FGsSjB_UHB1z7rxhOot2mrmJ-tfFIOwliddWSO1KD_Kfavd8fKrFuyXvmIl84X1lw5wY_CKxCatxLG39ARxg554jU_tnqGeilcrmo5QIep21GBA2n8QEsDInns7zcyXJyB9b93_T6UUDf0WrAewn6P7KJ_5BUUVetA8tMpEFk1yZ0NGOBvCQKOertaAbIUBVYaG2f-qaDTc5LB')",
-														}}
-													/>
-												</div>
-											</div>
-											<div className="flex flex-col justify-center gap-6">
-												<div>
-													<h4 className="text-xl font-bold text-slate-200 font-heading mb-3">
-														Headline
-													</h4>
-													<p className="text-slate-400 text-base leading-relaxed">
-														Walk the Future: Sustainable Style for the Urban
-														Explorer.
-													</p>
-												</div>
-												<div>
-													<h4 className="text-xl font-bold text-slate-200 font-heading mb-3">
-														Body Copy
-													</h4>
-													<p className="text-slate-400 text-base leading-relaxed">
-														Discover the intersection of innovation and
-														sustainability. Our new line of eco-friendly
-														sneakers is engineered for the conscious city
-														dweller. Made with recycled materials and designed
-														for ultimate comfort, they're not just shoes—they're
-														a statement.
-													</p>
-												</div>
-												<div>
-													<h4 className="text-xl font-bold text-slate-200 font-heading mb-3">
-														Keywords
-													</h4>
-													<div className="flex flex-wrap gap-2">
-														<span className="inline-flex items-center rounded-full bg-primary-gradient px-3 py-1 text-sm font-medium text-white">
-															Sustainable Sneakers
-														</span>
-														<span className="inline-flex items-center rounded-full bg-accent-cyan/20 px-3 py-1 text-sm font-medium text-accent-cyan">
-															Urban Exploration
-														</span>
-														<span className="inline-flex items-center rounded-full bg-primary-gradient px-3 py-1 text-sm font-medium text-white">
-															Eco-Conscious
-														</span>
-														<span className="inline-flex items-center rounded-full bg-accent-cyan/20 px-3 py-1 text-sm font-medium text-accent-cyan">
-															Recycled Materials
-														</span>
-														<span className="inline-flex items-center rounded-full bg-accent-cyan/20 px-3 py-1 text-sm font-medium text-accent-cyan">
-															City Dweller
-														</span>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div className="mt-8">
-											<button
-												type="button"
-												className="group relative inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-primary-gradient px-8 py-4 text-xl font-bold text-white shadow-lg transition-transform duration-300 ease-in-out hover:scale-105"
-											>
-												<div className="absolute inset-0 rounded-2xl bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-												<span className="relative z-10">Generate Assets</span>
-												<i
-													className="relative z-10 size-6 transition-transform duration-300 group-hover:rotate-12"
-													data-lucide="wand-sparkles"
-												/>
-											</button>
-										</div>
-									</div>
-								</div>
+								<PreviewCard
+									headline={result?.headline}
+									bodyCopy={result?.bodyCopy}
+									keywords={result?.keywords}
+									posterImage={result?.posterImage}
+									isLoading={isGenerating}
+									error={error}
+								/>
 							</div>
 						</div>
 					</div>
