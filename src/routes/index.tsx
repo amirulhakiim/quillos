@@ -1,19 +1,23 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useId, useState } from "react";
 import { PreviewCard } from "../components/preview-card";
 import { FileUpload } from "../components/ui/file-upload";
 import { type MarketingResult, readFileAsDataUrl } from "../lib/ai";
 import { generateMarketing } from "../lib/ai.server";
+import { generateAllAssets } from "../lib/assets.server";
+import { saveImage } from "../lib/indexeddb";
 
 export const Route = createFileRoute("/")({ component: App });
 
 function App() {
+	const navigate = useNavigate();
 	const descriptionId = useId();
 	const [description, setDescription] = useState("");
 	const [heroImage, setHeroImage] = useState<File | null>(null);
 	const [heroImagePreview, setHeroImagePreview] = useState<string>();
 	const [result, setResult] = useState<MarketingResult | null>(null);
 	const [isGenerating, setIsGenerating] = useState(false);
+	const [isGeneratingAssets, setIsGeneratingAssets] = useState(false);
 	const [error, setError] = useState<string>();
 
 	const handleImageSelect = (file: File) => {
@@ -67,12 +71,70 @@ function App() {
 		}
 	};
 
+	const handleGenerateAssets = async () => {
+		if (!result) {
+			return;
+		}
+		setIsGeneratingAssets(true);
+		setError(undefined);
+		try {
+			console.log("Generating all platform assets...");
+			const assets = await generateAllAssets({
+				data: {
+					headline: result.headline,
+					bodyCopy: result.bodyCopy,
+					keywords: result.keywords,
+				},
+			});
+			console.log("Assets generated:", assets);
+
+			await Promise.all([
+				saveImage("fb-square", assets.facebook.images.square),
+				saveImage("fb-vertical", assets.facebook.images.vertical),
+				saveImage("fb-landscape", assets.facebook.images.landscape),
+				saveImage("ig-square", assets.instagram.images.square),
+				saveImage("ig-vertical", assets.instagram.images.vertical),
+				saveImage("ig-portrait", assets.instagram.images.portrait),
+				saveImage("google-med-rect", assets.google.banners.mediumRectangle),
+				saveImage("google-leader", assets.google.banners.leaderboard),
+				saveImage("google-skyscraper", assets.google.banners.wideSkyscraper),
+				saveImage("google-large-rect", assets.google.banners.largeRectangle),
+			]);
+
+			const textOnlyAssets = {
+				facebook: {
+					headlines: assets.facebook.headlines,
+					primaryTexts: assets.facebook.primaryTexts,
+				},
+				instagram: {
+					headlines: assets.instagram.headlines,
+					primaryTexts: assets.instagram.primaryTexts,
+				},
+				google: {
+					headlines: assets.google.headlines,
+					descriptions: assets.google.descriptions,
+				},
+			};
+			localStorage.setItem("platformAssets", JSON.stringify(textOnlyAssets));
+			navigate({ to: "/social-media" });
+		} catch (thrownError) {
+			console.error("Error generating assets:", thrownError);
+			const message =
+				thrownError instanceof Error
+					? thrownError.message
+					: "Failed to generate assets.";
+			setError(message);
+		} finally {
+			setIsGeneratingAssets(false);
+		}
+	};
+
 	return (
 		<div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden bg-grid-white/[0.05]">
 			<div className="absolute inset-0 -z-10 h-full w-full bg-navy bg-[radial-gradient(#e5e7eb33_1px,transparent_1px)] [background-size:16px_16px]" />
 			<div className="layout-container flex h-full grow flex-col">
 				<header className="flex items-center justify-between whitespace-nowrap px-6 sm:px-10 lg:px-20 py-4 fixed top-0 left-0 right-0 bg-navy/80 backdrop-blur-md z-50 border-b border-slate-800">
-					<div className="flex items-center gap-4 text-slate-50">
+					<Link to="/" className="flex items-center gap-4 text-slate-50 hover:opacity-80 transition-opacity">
 						<div className="size-9 bg-primary-gradient rounded-lg flex items-center justify-center shadow-lg">
 							<svg
 								className="size-5 text-white"
@@ -94,7 +156,7 @@ function App() {
 						<h2 className="text-slate-50 text-2xl font-bold leading-tight font-heading">
 							Quillos
 						</h2>
-					</div>
+					</Link>
 					<div className="flex items-center gap-6">
 						<div className="hidden sm:flex items-center gap-6">
 							<button
@@ -191,11 +253,14 @@ function App() {
 								<div className="w-full">
 									<button
 										type="button"
-										className="w-full rounded-2xl bg-slate-300 py-4 text-lg font-bold text-slate-900 shadow-md transition-transform duration-200 ease-in-out hover:scale-[1.02] hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+										className="w-full rounded-2xl bg-slate-300 py-4 text-lg font-bold text-slate-900 shadow-md transition-transform duration-200 ease-in-out hover:scale-[1.02] hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
 										onClick={handleCreatePreview}
 										disabled={isGenerating}
 									>
-										{isGenerating ? "Creating..." : "Create Preview"}
+										{isGenerating && (
+											<div className="animate-spin size-5 border-2 border-slate-900 border-t-transparent rounded-full" />
+										)}
+										{isGenerating ? "Creating Preview..." : "Create Preview"}
 									</button>
 									{error ? (
 										<p className="mt-3 text-sm text-accent-rose">{error}</p>
@@ -208,8 +273,10 @@ function App() {
 									bodyCopy={result?.bodyCopy}
 									keywords={result?.keywords}
 									posterImage={result?.posterImage}
-									isLoading={isGenerating}
+									isGeneratingPreview={isGenerating}
+									isGeneratingAssets={isGeneratingAssets}
 									error={error}
+									onGenerateAssets={handleGenerateAssets}
 								/>
 							</div>
 						</div>

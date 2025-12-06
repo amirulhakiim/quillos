@@ -3,12 +3,42 @@ import { AssetSection } from "../../components/ui/asset-section";
 import { Button } from "../../components/ui/button";
 import { PageLayout } from "../../components/ui/page-layout";
 import { NavItem, SideNav } from "../../components/ui/side-nav";
+import { useAssetsWithImages } from "../../lib/use-assets-with-images";
 
 export const Route = createFileRoute("/ads/facebook")({
 	component: FacebookAdsPage,
 });
 
 function FacebookAdsPage() {
+	const { assets, loading } = useAssetsWithImages();
+	const fbAssets = assets?.facebook;
+
+	const copyHeadlines = () => {
+		if (fbAssets?.headlines) {
+			const text = fbAssets.headlines.join("\n");
+			navigator.clipboard.writeText(text);
+		}
+	};
+
+	const copyPrimaryTexts = () => {
+		if (fbAssets?.primaryTexts) {
+			const text = fbAssets.primaryTexts.join("\n\n");
+			navigator.clipboard.writeText(text);
+		}
+	};
+
+	if (loading) {
+		return (
+			<PageLayout
+				title="Facebook Ads"
+				description="Your Facebook ad assets are ready. Review, refine, and export for your campaigns."
+			>
+				<div className="flex items-center justify-center py-20">
+					<div className="animate-spin size-12 border-4 border-accent-cyan border-t-transparent rounded-full" />
+				</div>
+			</PageLayout>
+		);
+	}
 	return (
 		<PageLayout
 			title="Facebook Ads"
@@ -47,16 +77,19 @@ function FacebookAdsPage() {
 									title="Image (1:1 Aspect Ratio)"
 									aspectRatio="aspect-square"
 									maxWidth="max-w-xs"
+									imageUrl={fbAssets?.images?.square}
 								/>
 								<ImageAsset
 									title="Image (9:16 Aspect Ratio)"
 									aspectRatio="aspect-[9/16]"
 									maxWidth="max-w-[180px]"
+									imageUrl={fbAssets?.images?.vertical}
 								/>
 								<ImageAsset
 									title="Image (1.91:1 Aspect Ratio)"
 									aspectRatio="aspect-[1.91/1]"
 									maxWidth="max-w-sm"
+									imageUrl={fbAssets?.images?.landscape}
 								/>
 							</div>
 						</AssetSection>
@@ -69,13 +102,22 @@ function FacebookAdsPage() {
 							borderColor="border-3 border-primary-from/50 shadow-glow"
 							glowColor="#ff6b6b20"
 							buttonColor="border-primary-from text-primary-from hover:bg-primary-from hover:text-navy"
+							buttonText="Copy"
+							buttonIcon="copy"
+							onButtonClick={copyHeadlines}
 						>
 							<ul className="space-y-4">
-								<ListItem text="Walk The Future." />
-								<ListItem text="Sustainable Style, Unboxed." />
-								<ListItem text="Eco-Friendly Sneakers" />
-								<ListItem text="Step Into Sustainability" />
-								<ListItem text="Conscious Comfort." />
+								{fbAssets?.headlines.map((headline, index) => (
+									<ListItem key={index} text={headline} />
+								)) || (
+									<>
+										<ListItem text="Walk The Future." />
+										<ListItem text="Sustainable Style, Unboxed." />
+										<ListItem text="Eco-Friendly Sneakers" />
+										<ListItem text="Step Into Sustainability" />
+										<ListItem text="Conscious Comfort." />
+									</>
+								)}
 							</ul>
 						</AssetSection>
 
@@ -87,13 +129,37 @@ function FacebookAdsPage() {
 							borderColor="border-3 border-accent-cyan/50 shadow-glow"
 							glowColor="#22d3ee20"
 							buttonColor="border-accent-cyan text-accent-cyan hover:bg-accent-cyan hover:text-navy"
+							buttonText="Copy"
+							buttonIcon="copy"
+							onButtonClick={copyPrimaryTexts}
 						>
 							<ul className="space-y-4">
-								<ListItem text="Step into the future with our new eco-friendly sneakers, crafted from recycled materials for ultimate comfort and sustainable style. Shop now!" />
-								<ListItem text="Engineered for the conscious urban explorer. Our sustainable sneakers blend innovative design with recycled materials. Walk your values." />
-								<ListItem text="Make a statement that matters. Our new line of sneakers combines sleek, city-ready design with a commitment to our planet. Explore the collection." />
-								<ListItem text="Comfort meets conscience. Discover sneakers made for the modern world, featuring sustainable materials without compromising on performance or style." />
-								<ListItem text="Your journey to sustainability starts here. Our eco-friendly sneakers are designed for comfort, durability, and a smaller footprint. Get your pair today." />
+								{fbAssets?.primaryTexts.map((text, index) => (
+									<ListItem key={index} text={text} color="bg-accent-cyan" />
+								)) || (
+									<>
+										<ListItem
+											text="Step into the future with our new eco-friendly sneakers, crafted from recycled materials for ultimate comfort and sustainable style. Shop now!"
+											color="bg-accent-cyan"
+										/>
+										<ListItem
+											text="Engineered for the conscious urban explorer. Our sustainable sneakers blend innovative design with recycled materials. Walk your values."
+											color="bg-accent-cyan"
+										/>
+										<ListItem
+											text="Make a statement that matters. Our new line of sneakers combines sleek, city-ready design with a commitment to our planet. Explore the collection."
+											color="bg-accent-cyan"
+										/>
+										<ListItem
+											text="Comfort meets conscience. Discover sneakers made for the modern world, featuring sustainable materials without compromising on performance or style."
+											color="bg-accent-cyan"
+										/>
+										<ListItem
+											text="Your journey to sustainability starts here. Our eco-friendly sneakers are designed for comfort, durability, and a smaller footprint. Get your pair today."
+											color="bg-accent-cyan"
+										/>
+									</>
+								)}
 							</ul>
 						</AssetSection>
 					</div>
@@ -107,25 +173,45 @@ interface ImageAssetProps {
 	title: string;
 	aspectRatio: string;
 	maxWidth: string;
+	imageUrl?: string;
 }
 
-function ImageAsset({ title, aspectRatio, maxWidth }: ImageAssetProps) {
+function ImageAsset({
+	title,
+	aspectRatio,
+	maxWidth,
+	imageUrl,
+}: ImageAssetProps) {
 	return (
 		<div className="flex flex-col gap-4 items-center">
 			<h4 className="text-lg font-bold text-slate-300 font-heading">{title}</h4>
 			<div className={`w-full ${maxWidth} mx-auto`}>
-				<div
-					className={`${aspectRatio} w-full bg-cover bg-center rounded-2xl border border-white/10`}
-					style={{
-						backgroundImage:
-							"url('https://lh3.googleusercontent.com/aida-public/AB6AXuADJAapoS-tGjTVv6tVHWLAfjhJ6dSY8EGAraLGZJ8XUtgSP3KrA0oUR5x76PUDDD2Sw11KKpY1vi3gY-IYJWLjIUcIUOpM3tClYU_xGkvGzZlQwdn91nyH_API3Vsk8gjmsLSOshOJdgxwG77xuHmLUrK2yZwI80DXmVxp1MCZEApL5Itow-bdPrUtw6Meefd3Wcsz7iRjCLEQZdwwdJXoE5etKLskzPlwCNh5Hk4aTuT6zAGRfz1hDXzgXZUtVzi-DMfCb1AkPDxw')",
-					}}
-				/>
+				{imageUrl ? (
+					<img
+						src={imageUrl}
+						alt={title}
+						className={`${aspectRatio} w-full object-cover rounded-2xl border border-white/10`}
+					/>
+				) : (
+					<div
+						className={`${aspectRatio} w-full bg-slate-900 rounded-2xl border border-white/10 flex items-center justify-center`}
+					>
+						<p className="text-slate-600 text-sm">No image generated</p>
+					</div>
+				)}
 			</div>
 			<Button
 				variant="outline"
 				className="mt-4 border-accent-yellow text-accent-yellow hover:bg-accent-yellow hover:text-navy"
 				icon={<i className="size-5" data-lucide="download" />}
+				onClick={() => {
+					if (imageUrl) {
+						const link = document.createElement("a");
+						link.href = imageUrl;
+						link.download = `facebook-${title.toLowerCase().replace(/\s+/g, "-")}.png`;
+						link.click();
+					}
+				}}
 			>
 				Download
 			</Button>

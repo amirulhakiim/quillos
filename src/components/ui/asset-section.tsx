@@ -10,6 +10,9 @@ interface AssetSectionProps {
 	borderColor: string;
 	glowColor: string;
 	buttonColor: string;
+	buttonText?: string;
+	buttonIcon?: string;
+	onButtonClick?: () => void;
 	children: ReactNode;
 }
 
@@ -21,23 +24,27 @@ export function AssetSection({
 	borderColor,
 	glowColor,
 	buttonColor,
+	buttonText = "Download All",
+	buttonIcon = "download-cloud",
+	onButtonClick,
 	children,
 }: AssetSectionProps) {
 	return (
 		<GlassCard className={borderColor} glowColor={glowColor}>
-			<div className="p-6 flex items-center justify-between gap-4 border-b border-white/10">
-				<div className="flex items-center gap-4">
-					<div className={iconBgColor}>
-						<i className={`size-6 ${iconColor}`} data-lucide={icon} />
+			<div className="p-6 border-b border-white/10">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-4">
+						<div className={iconBgColor}>
+							<i className={`size-6 ${iconColor}`} data-lucide={icon} />
+						</div>
+						<h3 className="text-2xl font-bold text-slate-100 font-heading">
+							{title}
+						</h3>
 					</div>
-					<h3 className="text-2xl font-bold text-slate-100 font-heading">
-						{title}
-					</h3>
+					<Button variant="outline" className={buttonColor} onClick={onButtonClick}>
+						{buttonText}
+					</Button>
 				</div>
-				<Button variant="outline" className={buttonColor}>
-					<i className="size-5" data-lucide="download-cloud" />
-					<span className="hidden sm:inline">Download All</span>
-				</Button>
 			</div>
 			<div className="p-6 bg-navy/20">{children}</div>
 		</GlassCard>

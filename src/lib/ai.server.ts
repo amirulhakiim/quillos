@@ -47,49 +47,44 @@ export const generateMarketing = createServerFn({ method: "POST" })
 
 		const marketingResult = parseMarketingResponse(textContent.text);
 
-		const ai = new GoogleGenAI({
-			apiKey: process.env.GOOGLE_AI_STUDIO_API_KEY || "",
-		});
+		if (data.description) {
+			const ai = new GoogleGenAI({
+				apiKey: process.env.GOOGLE_AI_STUDIO_API_KEY || "",
+			});
 
-		const imagePrompt = `Create a professional marketing poster for a campaign with the following details:
+			const imagePrompt = `Create a professional marketing poster based on this description: ${data.description}
+
+Campaign details:
 Headline: ${marketingResult.headline}
 Body Copy: ${marketingResult.bodyCopy}
 Keywords: ${marketingResult.keywords.join(", ")}
 
-The poster should be visually striking, modern, and suitable for social media advertising. Include the headline prominently in the design.`;
+The poster should be visually striking, modern, and suitable for social media advertising.`;
 
-		try {
-			console.log("Starting image generation with Gemini...");
-			const imageResponse = await ai.models.generateContent({
-				model: "gemini-2.5-flash-image",
-				contents: imagePrompt,
-			});
+			try {
+				console.log("Generating poster with description...");
+				const imageResponse = await ai.models.generateContent({
+					model: "gemini-2.5-flash-image",
+					contents: imagePrompt,
+				});
 
-			console.log("Image generation response received");
-			console.log(
-				"Response structure:",
-				JSON.stringify(imageResponse, null, 2),
-			);
+				const imagePart = imageResponse.candidates?.[0]?.content?.parts?.find(
+					(part) => part.inlineData,
+				);
 
-			const imagePart = imageResponse.candidates?.[0]?.content?.parts?.find(
-				(part) => part.inlineData,
-			);
-
-			console.log("Image part found:", !!imagePart);
-			console.log("Has inline data:", !!imagePart?.inlineData?.data);
-
-			if (imagePart?.inlineData?.data) {
-				marketingResult.posterImage = `data:image/png;base64,${imagePart.inlineData.data}`;
-				console.log("Poster image added to result");
-			} else {
-				console.log("No image data in response");
+				if (imagePart?.inlineData?.data) {
+					marketingResult.posterImage = `data:image/png;base64,${imagePart.inlineData.data}`;
+					console.log("Poster generated successfully");
+				} else {
+					console.log("No image data, using uploaded image");
+					marketingResult.posterImage = `data:${data.mediaType};base64,${data.dataUrl}`;
+				}
+			} catch (error) {
+				console.error("Failed to generate poster:", error);
+				marketingResult.posterImage = `data:${data.mediaType};base64,${data.dataUrl}`;
 			}
-		} catch (error) {
-			console.error("Failed to generate image:", error);
-			if (error instanceof Error) {
-				console.error("Error details:", error.message);
-				console.error("Error stack:", error.stack);
-			}
+		} else {
+			marketingResult.posterImage = `data:${data.mediaType};base64,${data.dataUrl}`;
 		}
 
 		return marketingResult;

@@ -5,8 +5,10 @@ type PreviewCardProps = {
 	bodyCopy?: string;
 	keywords?: string[];
 	posterImage?: string;
-	isLoading?: boolean;
+	isGeneratingPreview?: boolean;
+	isGeneratingAssets?: boolean;
 	error?: string;
+	onGenerateAssets?: () => void;
 };
 
 export function PreviewCard({
@@ -14,8 +16,10 @@ export function PreviewCard({
 	bodyCopy,
 	keywords = [],
 	posterImage,
-	isLoading,
+	isGeneratingPreview,
+	isGeneratingAssets,
 	error,
+	onGenerateAssets,
 }: PreviewCardProps) {
 	const [showFullImage, setShowFullImage] = useState(false);
 	const displayHeadline =
@@ -38,7 +42,7 @@ export function PreviewCard({
 								3. Preview
 							</h3>
 						</div>
-						{isLoading ? (
+						{(isGeneratingPreview || isGeneratingAssets) ? (
 							<span className="text-sm font-medium text-accent-yellow">
 								Generating...
 							</span>
@@ -71,9 +75,13 @@ export function PreviewCard({
 									</button>
 								) : (
 									<div className="flex flex-col items-center gap-3 text-slate-600">
-										<i className="size-12" data-lucide="image" />
+										{isGeneratingPreview ? (
+											<div className="animate-spin size-12 border-4 border-slate-700 border-t-transparent rounded-full" />
+										) : (
+											<i className="size-12" data-lucide="image" />
+										)}
 										<p className="text-sm font-medium">
-											{isLoading
+											{isGeneratingPreview
 												? "Generating poster..."
 												: "Click 'Create Preview' to generate poster"}
 										</p>
@@ -118,15 +126,23 @@ export function PreviewCard({
 					<div className="mt-8">
 						<button
 							type="button"
-							className="group relative inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-primary-gradient px-8 py-4 text-xl font-bold text-white shadow-lg transition-transform duration-300 ease-in-out hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
-							disabled
+							className="group relative inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-primary-gradient px-8 py-4 text-xl font-bold text-white shadow-lg transition-transform duration-300 ease-in-out hover:scale-105 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
+							disabled={!posterImage || isGeneratingAssets}
+							onClick={onGenerateAssets}
 						>
 							<div className="absolute inset-0 rounded-2xl bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-							<span className="relative z-10">Generate Assets</span>
-							<i
-								className="relative z-10 size-6 transition-transform duration-300 group-hover:rotate-12"
-								data-lucide="wand-sparkles"
-							/>
+							{isGeneratingAssets && (
+								<div className="relative z-10 animate-spin size-6 border-2 border-white border-t-transparent rounded-full" />
+							)}
+							<span className="relative z-10">
+								{isGeneratingAssets ? "Generating Assets..." : "Generate Assets"}
+							</span>
+							{!isGeneratingAssets && (
+								<i
+									className="relative z-10 size-6 transition-transform duration-300 group-hover:rotate-12"
+									data-lucide="wand-sparkles"
+								/>
+							)}
 						</button>
 					</div>
 				</div>
