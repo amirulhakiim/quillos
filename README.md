@@ -1,310 +1,280 @@
-Welcome to your new TanStack app! 
+# Quillos
 
-# Getting Started
+An AI-powered marketing campaign generator that creates multi-platform marketing assets in minutes. Upload an image, provide context, and watch Quillos generate professional marketing copy and visuals for Facebook, Instagram, and Google Ads.
 
-To run this application:
+## Features
 
+- **AI-Powered Content Generation**: Uses Claude Sonnet 4.5 for marketing copy and Google Gemini for image generation
+- **Multi-Platform Support**: Generate assets optimized for:
+  - Facebook Ads (headlines, primary texts, images in multiple formats)
+  - Instagram Ads (captions, stories, images)
+  - Google Ads (headlines, descriptions, banner ads)
+- **Social Media Preview**: See how your content looks on TikTok, Facebook, Threads, and Twitter
+- **Conditional Image Generation**: Upload your own image or let AI create one based on your description
+- **One-Click Copy**: Easily copy all generated text content to clipboard
+- **Asset Management**: Images stored in IndexedDB, text content in localStorage for optimal performance
+- **Real-time Preview**: See your marketing poster before generating full asset suite
+
+## Tech Stack
+
+### Frontend
+- **React 19** - UI library
+- **TanStack Router** - File-based routing with type safety
+- **TanStack Query** - Server state management
+- **TanStack Start** - Full-stack React framework
+- **Tailwind CSS 4** - Utility-first styling
+- **Lucide React** - Icon library
+
+### Backend & AI
+- **Anthropic Claude API** (claude-sonnet-4-5-20250929) - Marketing copy generation
+- **Google Gemini API** (gemini-2.5-flash-image) - Image generation
+- **TanStack Start Server Functions** - Type-safe API layer
+
+### Data & Storage
+- **IndexedDB** - Browser storage for generated images (50MB+ quota)
+- **localStorage** - Text content storage
+- **Drizzle ORM** - Database toolkit (optional for future features)
+- **PostgreSQL** - Database (optional for future features)
+
+### Development Tools
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **Vitest** - Unit testing
+- **Biome** - Linting and formatting
+- **React Testing Library** - Component testing
+
+## Prerequisites
+
+- **Node.js** 18+ or 20+
+- **pnpm** 8+ (recommended package manager)
+- **Anthropic API Key** - Get one from [Anthropic Console](https://console.anthropic.com/)
+- **Google AI Studio API Key** - Get one from [Google AI Studio](https://aistudio.google.com/)
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd quillos
+```
+
+2. Install dependencies:
 ```bash
 pnpm install
-pnpm start
 ```
 
-# Building For Production
-
-To build this application for production:
-
+3. Create environment file:
 ```bash
-pnpm build
+cp .env.example .env
 ```
+
+4. Add your API keys to `.env`:
+```env
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+GOOGLE_AI_STUDIO_API_KEY=your_google_ai_studio_api_key_here
+```
+
+## Development
+
+Start the development server:
+```bash
+pnpm dev
+```
+
+The app will be available at `http://localhost:3000`
+
+### Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start development server on port 3000 |
+| `pnpm build` | Build for production |
+| `pnpm serve` | Preview production build |
+| `pnpm start` | Run production server |
+| `pnpm test` | Run tests with Vitest |
+| `pnpm lint` | Lint code with Biome |
+| `pnpm format` | Format code with Biome |
+| `pnpm check` | Run linting and formatting checks |
+
+### Database Scripts (Optional)
+
+| Command | Description |
+|---------|-------------|
+| `pnpm db:generate` | Generate database migrations |
+| `pnpm db:migrate` | Run database migrations |
+| `pnpm db:push` | Push schema changes to database |
+| `pnpm db:pull` | Pull schema from database |
+| `pnpm db:studio` | Open Drizzle Studio |
+
+## Project Structure
+
+```
+quillos/
+├── src/
+│   ├── routes/                    # File-based routes
+│   │   ├── __root.tsx            # Root layout with HTML head
+│   │   ├── index.tsx             # Home page - campaign input
+│   │   ├── social-media.tsx      # Social media preview page
+│   │   └── ads/                  # Platform-specific pages
+│   │       ├── facebook.tsx      # Facebook Ads assets
+│   │       ├── instagram.tsx     # Instagram Ads assets
+│   │       └── google.tsx        # Google Ads assets
+│   ├── components/
+│   │   ├── ui/                   # Reusable UI components
+│   │   │   ├── asset-section.tsx # Asset display section
+│   │   │   ├── button.tsx        # Button component
+│   │   │   ├── file-upload.tsx   # File upload component
+│   │   │   ├── glass-card.tsx    # Glassmorphism card
+│   │   │   ├── page-layout.tsx   # Page wrapper
+│   │   │   └── side-nav.tsx      # Navigation sidebar
+│   │   ├── Header.tsx            # App header
+│   │   └── preview-card.tsx      # Marketing preview card
+│   ├── lib/
+│   │   ├── ai.ts                 # AI utility functions
+│   │   ├── ai.server.ts          # Server-side AI integration
+│   │   ├── assets.server.ts      # Asset generation logic
+│   │   ├── indexeddb.ts          # IndexedDB storage utilities
+│   │   ├── use-platform-assets.ts # Asset loading hook
+│   │   └── use-assets-with-images.ts # Combined asset hook
+│   ├── styles.css                # Global styles
+│   └── entry-client.tsx          # Client entry point
+├── public/                       # Static assets
+├── .env                          # Environment variables (create this)
+├── package.json                  # Dependencies and scripts
+├── tsconfig.json                 # TypeScript config
+├── vite.config.ts                # Vite configuration
+└── biome.json                    # Biome linting config
+```
+
+## How It Works
+
+### 1. Campaign Input (Home Page)
+
+1. **Upload Hero Image**: Upload the main image for your campaign
+2. **Add Description** (Optional): Provide context to influence AI generation
+3. **Create Preview**: AI analyzes the image and generates:
+   - Marketing headline
+   - Body copy
+   - Keywords
+   - Poster image (AI-generated if description provided, otherwise uses uploaded image)
+
+### 2. Generate Assets
+
+Click "Generate Assets" to create platform-specific content:
+- **10 images** in different aspect ratios (square, vertical, landscape, etc.)
+- **3-5 headlines** per platform
+- **3-5 primary texts/descriptions** per platform
+
+All optimized for each advertising platform's specifications.
+
+### 3. Review & Export
+
+Navigate to platform-specific pages to:
+- View all generated assets
+- Copy text content with one click
+- Download images individually or in bulk
+- Preview social media content
+
+## Key Features Explained
+
+### Conditional Poster Generation
+
+- **With Description**: AI generates a new poster based on your description and extracted campaign details
+- **Without Description**: Uses your uploaded image directly
+
+### Independent Loading States
+
+- Preview generation shows spinner in preview card
+- Asset generation shows spinner on button
+- Both processes are independent and non-blocking
+
+### Storage Strategy
+
+- **IndexedDB**: Stores 10 generated images (bypasses localStorage 5-10MB limit)
+- **localStorage**: Stores text content (headlines, descriptions)
+- **Custom Hook**: Combines both sources for seamless data access
+
+### Copy Functionality
+
+All text sections (headlines, primary texts, descriptions) feature copy buttons that:
+- Copy all items in the section
+- Format with appropriate line breaks
+- Use browser Clipboard API
 
 ## Testing
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
-
+Run tests with Vitest:
 ```bash
 pnpm test
 ```
 
-## Styling
+Tests are located in `__tests__` directories or colocated as `*.test.ts` files.
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+## Building for Production
 
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
-
-
+Build the application:
 ```bash
-pnpm lint
-pnpm format
+pnpm build
+```
+
+Preview the production build:
+```bash
+pnpm serve
+```
+
+Run the production server:
+```bash
+pnpm start
+```
+
+The build output will be in `.output/` directory.
+
+## Code Quality
+
+This project follows strict code quality standards:
+
+- **Biome** for linting and formatting (no ESLint or Prettier)
+- **No inline comments** - code is self-documenting through clear naming
+- **Component decomposition** - small, focused, reusable components
+- **Type safety** - Full TypeScript coverage
+- **Avoid `useEffect`** - Prefer derived state and event handlers
+
+Check code quality:
+```bash
 pnpm check
 ```
 
+## Environment Variables
 
-## Shadcn
+Required environment variables in `.env`:
 
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
+```env
+# Anthropic API (Claude)
+ANTHROPIC_API_KEY=sk-ant-...
 
-```bash
-pnpx shadcn@latest add button
+# Google AI Studio (Gemini)
+GOOGLE_AI_STUDIO_API_KEY=AI...
 ```
 
+## Browser Support
 
+- Modern browsers with IndexedDB support
+- Chrome/Edge 80+
+- Firefox 75+
+- Safari 14+
 
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+## Contributing
 
-### Adding A Route
+1. Follow Biome formatting standards
+2. Write tests for new features
+3. Keep components small and focused
+4. Use TypeScript strictly
+5. Avoid inline comments
 
-To add a new route to your application just add another a new file in the `./src/routes` directory.
+## License
 
-TanStack will automatically generate the content of the route file for you.
+MIT
 
-Now that you have two routes you can use a `Link` component to navigate between them.
+## Support
 
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
-
-```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools
-```
-
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
-
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// ...
-
-const queryClient = new QueryClient();
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from "@tanstack/react-query";
-
-import "./App.css";
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  });
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
-
-```bash
-pnpm add @tanstack/store
-```
-
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-function App() {
-  const count = useStore(countStore);
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  );
-}
-
-export default App;
-```
-
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
-
-Let's check this out by doubling the count using derived state.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-});
-doubledStore.mount();
-
-function App() {
-  const count = useStore(countStore);
-  const doubledCount = useStore(doubledStore);
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  );
-}
-
-export default App;
-```
-
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
-
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
-
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+For issues or questions, please open an issue on the repository.
