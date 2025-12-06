@@ -9,38 +9,96 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SocialMediaRouteImport } from './routes/social-media'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdsInstagramRouteImport } from './routes/ads/instagram'
+import { Route as AdsGoogleRouteImport } from './routes/ads/google'
+import { Route as AdsFacebookRouteImport } from './routes/ads/facebook'
 
+const SocialMediaRoute = SocialMediaRouteImport.update({
+  id: '/social-media',
+  path: '/social-media',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdsInstagramRoute = AdsInstagramRouteImport.update({
+  id: '/ads/instagram',
+  path: '/ads/instagram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdsGoogleRoute = AdsGoogleRouteImport.update({
+  id: '/ads/google',
+  path: '/ads/google',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdsFacebookRoute = AdsFacebookRouteImport.update({
+  id: '/ads/facebook',
+  path: '/ads/facebook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/social-media': typeof SocialMediaRoute
+  '/ads/facebook': typeof AdsFacebookRoute
+  '/ads/google': typeof AdsGoogleRoute
+  '/ads/instagram': typeof AdsInstagramRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/social-media': typeof SocialMediaRoute
+  '/ads/facebook': typeof AdsFacebookRoute
+  '/ads/google': typeof AdsGoogleRoute
+  '/ads/instagram': typeof AdsInstagramRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/social-media': typeof SocialMediaRoute
+  '/ads/facebook': typeof AdsFacebookRoute
+  '/ads/google': typeof AdsGoogleRoute
+  '/ads/instagram': typeof AdsInstagramRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/social-media'
+    | '/ads/facebook'
+    | '/ads/google'
+    | '/ads/instagram'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/social-media' | '/ads/facebook' | '/ads/google' | '/ads/instagram'
+  id:
+    | '__root__'
+    | '/'
+    | '/social-media'
+    | '/ads/facebook'
+    | '/ads/google'
+    | '/ads/instagram'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SocialMediaRoute: typeof SocialMediaRoute
+  AdsFacebookRoute: typeof AdsFacebookRoute
+  AdsGoogleRoute: typeof AdsGoogleRoute
+  AdsInstagramRoute: typeof AdsInstagramRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/social-media': {
+      id: '/social-media'
+      path: '/social-media'
+      fullPath: '/social-media'
+      preLoaderRoute: typeof SocialMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +106,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ads/instagram': {
+      id: '/ads/instagram'
+      path: '/ads/instagram'
+      fullPath: '/ads/instagram'
+      preLoaderRoute: typeof AdsInstagramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ads/google': {
+      id: '/ads/google'
+      path: '/ads/google'
+      fullPath: '/ads/google'
+      preLoaderRoute: typeof AdsGoogleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ads/facebook': {
+      id: '/ads/facebook'
+      path: '/ads/facebook'
+      fullPath: '/ads/facebook'
+      preLoaderRoute: typeof AdsFacebookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SocialMediaRoute: SocialMediaRoute,
+  AdsFacebookRoute: AdsFacebookRoute,
+  AdsGoogleRoute: AdsGoogleRoute,
+  AdsInstagramRoute: AdsInstagramRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
