@@ -1,0 +1,48 @@
+# Project Rules & Guidelines
+
+## 1. Code Quality & Formatting (Strict)
+
+- **Linter:** Follow `biome` standards strictly.
+- **Workflow:** After every code generation or edit, you must simulate running `biome check`.
+- **Fixes:** Automatically fix any linting errors or warnings raised by Biome before presenting the final code.
+- **No Inline Comments:** **NEVER** add inline comments (`//` or `/* */`) to explain code. Code must be self-documenting through precise variable and function naming.
+  - *Exception:* JSDoc is allowed only for exported library functions if strictly necessary for IntelliSense.
+
+## 2. React Architecture & Patterns
+
+- **Componentization:**
+  - **Decompose UI:** Break complex interfaces into small, focused, and isolated components.
+  - **Folder Structure:** MANDATORY. Place all generic, reusable, and presentational primitives (e.g., Buttons, Inputs, Cards, Modals) exclusively in the `components/ui` directory.
+  - **Single Responsibility:** Avoid monolithic components. If a component handles multiple logical concerns or renders a large tree, extract sub-components immediately.
+  - **Reusability:** Prioritize creating generic, reusable UI atoms over hardcoded, one-off structures.
+- **State Management:**
+  - **Anti-Pattern:** **Avoid `useEffect`** whenever possible.
+  - **Reference:** Adhere strictly to the React documentation: [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect).
+  - **Alternatives:**
+    - Use **Derived State** (variables calculated during render) instead of syncing state with effects.
+    - Use **Event Handlers** for side effects triggered by interactions.
+
+## 3. Testing Strategy
+
+- **Framework:** Vitest.
+- **Requirement:** Add unit tests for all new features, components, or logic modifications.
+- **Workflow:**
+  1. Write the code.
+  2. Write the test (colocated `*.test.ts` or in `__tests__`).
+  3. Verify the logic holds true.
+
+## 4. Documentation & Context
+
+- **Tool Usage:** **Always** use **Context7** when code generation, setup, configuration steps, or library/API documentation is required.
+- **Automation:** You must automatically use the Context7 MCP tools to resolve `library_id` and fetch library docs. Do not ask for explicit permission; assume the intent if the task involves 
+external libraries.
+
+## 5. Development Workflow
+
+When completing a task, follow this loop:
+
+1. **Context:** Use Context7 to fetch docs if using a library.
+2. **Implement:** Write code without comments, ensuring UI is broken into components (primitives in `components/ui`).
+3. **Refine:** Ensure no `useEffect` is used for state syncing.
+4. **Verify:** Check against Biome rules.
+5. **Test:** Generate the corresponding Vitest test case.
